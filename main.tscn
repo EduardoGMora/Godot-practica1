@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=3 uid="uid://docfy4ouo46ch"]
+
+[ext_resource type="Script" uid="uid://bxv1ikrcmjg0w" path="res://main.gd" id="1_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://hyqtshcfl286" path="res://playerxd.tscn" id="1_ig7tw"]
+
+[sub_resource type="Curve2D" id="Curve2D_ig7tw"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 320, 0, 0, 0, 0, 0, 320, 448, 0, 0, 0, 0, 0, 448)
+}
+point_count = 4
+
+[sub_resource type="GDScript" id="GDScript_h2yge"]
+script/source = "extends Path2D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+"
+
+[node name="main" type="Node"]
+script = ExtResource("1_0xm2m")
+
+[node name="Playerxd" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(112, 144)
+
+[node name="MobTimer" type="Timer" parent="."]
+wait_time = 0.5
+
+[node name="ScoreTimer" type="Timer" parent="."]
+
+[node name="StartTimer" type="Timer" parent="."]
+wait_time = 2.0
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(2.4, 4.5)
+
+[node name="MobPath" type="Path2D" parent="."]
+curve = SubResource("Curve2D_ig7tw")
+script = SubResource("GDScript_h2yge")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="MobPath"]
