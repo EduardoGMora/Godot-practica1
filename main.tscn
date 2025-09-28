@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=4 uid="uid://docfy4ouo46ch"]
+[gd_scene load_steps=10 format=4 uid="uid://docfy4ouo46ch"]
 
 [ext_resource type="Script" uid="uid://bxv1ikrcmjg0w" path="res://main.gd" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://hyqtshcfl286" path="res://playerxd.tscn" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://dqq6rtrhatmxk" path="res://mob.tscn" id="2_lquwl"]
 [ext_resource type="PackedScene" uid="uid://bjvqflxj3xljy" path="res://hud.tscn" id="3_h2yge"]
+[ext_resource type="Texture2D" uid="uid://bym4es3px6jhe" path="res://art/backg.jpg" id="5_lquwl"]
 
 [sub_resource type="Curve2D" id="Curve2D_ig7tw"]
 _data = {
@@ -52,19 +53,22 @@ rotation = -0.00208768
 
 [node name="HUD" parent="." instance=ExtResource("3_h2yge")]
 
-[node name="ColorRect" type="ColorRect" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.651729, 0.308553, 0.511242, 1)
-
 [node name="Music" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamOggVorbis_1bvp3")
 
 [node name="DeathSound" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamWAV_lquwl")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -240.0
+offset_right = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_lquwl")
 
 [connection signal="hit" from="Playerxd" to="." method="game_over"]
 [connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]

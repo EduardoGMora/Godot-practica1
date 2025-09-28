@@ -3,7 +3,7 @@ extends Area2D
 signal hit
 
 @export var speed = 400
-@export var roll_speed_multiplier = 1.2
+@export var roll_speed_multiplier = 1.1
 var screen_size
 var is_rolling = false
 var is_attacking = false
@@ -31,9 +31,12 @@ func _process(delta):
 		# Lógica de input normal (cuando no ataca ni esquiva)
 		
 		# 1. Chequeo de Ataque
-		if Input.is_action_just_pressed("attack"):
+		if !is_attacking and Input.is_action_just_pressed("attack"):
 			is_attacking = true
 			$AnimatedSprite2D.play("attack")
+			
+			# ¡ACTIVAR EL HITBOX DE ATAQUE!
+			$AttackHitbox/CollisionShape2D.disabled = false 
 		
 		# 2. Chequeo de Esquiva
 		elif Input.is_action_just_pressed("roll"):
@@ -86,6 +89,15 @@ func _process(delta):
 		elif velocity.y != 0:
 			pass 
 
+func _on_attack_hitbox_body_entered(body):
+	# Asume que tus villanos tienen un script que implementa una función 'take_damage'
+	if body.has_method("take_damage"):
+		# Puedes pasar el daño, la fuerza del ataque, etc.
+		body.take_damage(1) 
+		
+		# O, si quieres que simplemente mueran
+		# body.queue_free()
+
 func start(pos):
 	position = pos
 	show()
@@ -104,22 +116,7 @@ func _on_animated_sprite_2d_animation_finished():
 	
 	if current_animation == "attack":
 		is_attacking = false
+		$Mob/CollisionShape2D.disabled = true
 		
 	if current_animation == "roll":
-		# ¡CORRECCIÓN CLAVE! Al terminar el roll, establece el estado en false
 		is_rolling = false
-		
-	# Después de cualquier animación de un solo uso (attack, roll, turn_around),
-	# volvemos a la animación de 'idle' o 'run'
-	
-	# Obtenemos la velocidad de nuevo para determinar qué animación toca
-	var velocity = Vector2.ZERO
-	if Input.is_action_pressed("move_right"): velocity.x += 1
-	if Input.is_action_pressed("move_left"): velocity.x -= 1
-	if Input.is_action_pressed("move_down"): velocity.y += 1
-	if Input.is_action_pressed("move_up"): velocity.y -= 1
-	
-	if velocity.length() > 0:
-		$AnimatedSprite2D.play("run")
-	else:
-		$AnimatedSprite2D.play("idle")
