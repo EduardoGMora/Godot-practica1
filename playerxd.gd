@@ -3,48 +3,123 @@ extends Area2D
 signal hit
 
 @export var speed = 400
+@export var roll_speed_multiplier = 1.2
 var screen_size
+var is_rolling = false
+var is_attacking = false
+var last_velocity = Vector2(0, 1) 
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
 	hide()
+	$AnimatedSprite2D.animation_finished.connect(_on_animated_sprite_2d_animation_finished)
 
 func _process(delta):
-	var velocity = Vector2.ZERO # The player's movement vector.
-	if Input.is_action_pressed("move_right"):
-		velocity.x += 1
-	if Input.is_action_pressed("move_left"):
-		velocity.x -= 1
-	if Input.is_action_pressed("move_down"):
-		velocity.y += 1
-	if Input.is_action_pressed("move_up"):
-		velocity.y -= 1
-
-	if velocity.length() > 0:
-		velocity = velocity.normalized() * speed
-		$AnimatedSprite2D.play()
+	var velocity = Vector2.ZERO # El vector de movimiento del jugador.
+	
+	# ==========================================================
+	# A. LÓGICA DE ESTADOS Y MOVIMIENTO
+	# ==========================================================
+	
+	if is_attacking:
+		pass 
+	
+	elif is_rolling:
+		velocity = last_velocity.normalized() * speed * roll_speed_multiplier
+		
 	else:
-		$AnimatedSprite2D.stop()
+		# Lógica de input normal (cuando no ataca ni esquiva)
+		
+		# 1. Chequeo de Ataque
+		if Input.is_action_just_pressed("attack"):
+			is_attacking = true
+			$AnimatedSprite2D.play("attack")
+		
+		# 2. Chequeo de Esquiva
+		elif Input.is_action_just_pressed("roll"):
+			# Solo se permite esquivar si hay alguna dirección de movimiento
+			if last_velocity.length() > 0:
+				is_rolling = true
+				$AnimatedSprite2D.play("roll")
+		
+		# 3. Input de Movimiento
+		if Input.is_action_pressed("move_right"):
+			velocity.x += 1
+		if Input.is_action_pressed("move_left"):
+			velocity.x -= 1
+		if Input.is_action_pressed("move_down"):
+			velocity.y += 1
+		if Input.is_action_pressed("move_up"):
+			velocity.y -= 1
+			
+		# 4. Actualizar last_velocity 
+		if velocity.length() > 0:
+			last_velocity = velocity.normalized()
+			velocity = last_velocity * speed
+		# Si el jugador no se mueve, velocity será ZERO.
 
+	# ==========================================================
+	# B. APLICAR MOVIMIENTO Y LÓGICA DE ANIMACIÓN
+	# ==========================================================
+
+	# Aplicar el movimiento: Se hace aquí para que funcione en los tres estados (Idle/Run, Attack, Roll)
 	position += velocity * delta
 	position = position.clamp(Vector2.ZERO, screen_size)
+	
+	# Lógica de animación: Solo se aplica si no está atacando o esquivando
+	if not is_attacking and not is_rolling:
+		if velocity.length() > 0:
+			$AnimatedSprite2D.play("run")
+		else:
+			$AnimatedSprite2D.play("idle")
 
-	if velocity.x != 0:
-		$AnimatedSprite2D.animation = "walk"
-		$AnimatedSprite2D.flip_v = false
-		$Trail.rotation = 0
-		$AnimatedSprite2D.flip_h = velocity.x < 0
-	elif velocity.y != 0:
-		$AnimatedSprite2D.animation = "up"
-		rotation = PI if velocity.y > 0 else 0
+	# Lógica de Flip/Rotación (Asegúrate de que no interfiera con las animaciones de ataque/roll)
+	if not is_attacking and not is_rolling:
+		if velocity.x != 0:
+			$AnimatedSprite2D.flip_v = false
+			$Trail.rotation = 0
+			if velocity.x < 0:
+				$AnimatedSprite2D.flip_h = true
+			else:
+				$AnimatedSprite2D.flip_h = false
+
+		elif velocity.y != 0:
+			pass 
 
 func start(pos):
 	position = pos
 	show()
 	$CollisionShape2D.disabled = false
+	$AnimatedSprite2D.play("idle")
 	set_process(true)
 
 func _on_body_entered(body):
 	hit.emit()
 	hide()
 	$CollisionShape2D.set_deferred(&"disabled", true)
+
+
+func _on_animated_sprite_2d_animation_finished():
+	var current_animation = $AnimatedSprite2D.animation
+	
+	if current_animation == "attack":
+		is_attacking = false
+		
+	if current_animation == "roll":
+		# ¡CORRECCIÓN CLAVE! Al terminar el roll, establece el estado en false
+		is_rolling = false
+		
+	# Después de cualquier animación de un solo uso (attack, roll, turn_around),
+	# volvemos a la animación de 'idle' o 'run'
+	
+	# Obtenemos la velocidad de nuevo para determinar qué animación toca
+	var velocity = Vector2.ZERO
+	if Input.is_action_pressed("move_right"): velocity.x += 1
+	if Input.is_action_pressed("move_left"): velocity.x -= 1
+	if Input.is_action_pressed("move_down"): velocity.y += 1
+	if Input.is_action_pressed("move_up"): velocity.y -= 1
+	
+	if velocity.length() > 0:
+		$AnimatedSprite2D.play("run")
+	else:
+		$AnimatedSprite2D.play("idle")
