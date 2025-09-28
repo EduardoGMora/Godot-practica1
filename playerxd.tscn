@@ -1,10 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://hyqtshcfl286"]
+[gd_scene load_steps=13 format=3 uid="uid://hyqtshcfl286"]
 
 [ext_resource type="Script" uid="uid://b3fb4cp2cjk8o" path="res://playerxd.gd" id="1_a1o11"]
-[ext_resource type="Texture2D" uid="uid://d2ychqs7fp4ki" path="res://dodge_the_creeps_2d_assets/art/playerGrey_up1.png" id="1_dv27f"]
-[ext_resource type="Texture2D" uid="uid://b775lxvaojyhc" path="res://dodge_the_creeps_2d_assets/art/playerGrey_up2.png" id="2_a1o11"]
-[ext_resource type="Texture2D" uid="uid://bgpsq6gvaa11u" path="res://dodge_the_creeps_2d_assets/art/playerGrey_walk1.png" id="3_ja7yg"]
-[ext_resource type="Texture2D" uid="uid://dk1fnpid7qhar" path="res://dodge_the_creeps_2d_assets/art/playerGrey_walk2.png" id="4_j4n2g"]
+[ext_resource type="Texture2D" uid="uid://d2ychqs7fp4ki" path="res://art/playerGrey_up1.png" id="1_dv27f"]
+[ext_resource type="Texture2D" uid="uid://b775lxvaojyhc" path="res://art/playerGrey_up2.png" id="2_a1o11"]
+[ext_resource type="Texture2D" uid="uid://bgpsq6gvaa11u" path="res://art/playerGrey_walk1.png" id="3_ja7yg"]
+[ext_resource type="Texture2D" uid="uid://dk1fnpid7qhar" path="res://art/playerGrey_walk2.png" id="4_j4n2g"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_mb6sm"]
 animations = [{
@@ -32,11 +32,33 @@ animations = [{
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dv27f"]
-radius = 47.0
-height = 118.0
+radius = 52.0
+height = 132.0
+
+[sub_resource type="Gradient" id="Gradient_a1o11"]
+offsets = PackedFloat32Array(0, 0.990909, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.0745098, 0.0745098, 0.0745098, 0, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ja7yg"]
+gradient = SubResource("Gradient_a1o11")
+
+[sub_resource type="Curve" id="Curve_a1o11"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_ja7yg"]
+curve = SubResource("Curve_a1o11")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_j4n2g"]
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 0.5
+scale_curve = SubResource("CurveTexture_ja7yg")
+color_ramp = SubResource("GradientTexture1D_ja7yg")
 
 [node name="Playerxd" type="Area2D"]
-position = Vector2(236, 381)
+z_index = 10
+scale = Vector2(0.5, 0.5)
 script = ExtResource("1_a1o11")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
@@ -44,5 +66,13 @@ sprite_frames = SubResource("SpriteFrames_mb6sm")
 animation = &"up"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-1, 2)
 shape = SubResource("CapsuleShape2D_dv27f")
+
+[node name="Trail" type="GPUParticles2D" parent="."]
+z_index = 9
+z_as_relative = false
+amount = 10
+speed_scale = 2.0
+process_material = SubResource("ParticleProcessMaterial_j4n2g")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
